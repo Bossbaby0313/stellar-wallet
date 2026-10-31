@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { ArrowLeftRight, ArrowUpRight, Copy, ExternalLink, Eye, EyeOff, Fuel, Globe2, LayoutDashboard, LoaderCircle, LogOut, Menu, RefreshCw, ShieldCheck, Wallet, X, Zap } from 'lucide-react'
-import { getAddress, isConnected, signTransaction } from '@stellar/freighter-api'
+import { requestAccess, isConnected, signTransaction } from '@stellar/freighter-api'
 import { buildPayment, loadBalances, loadPayments, submitSignedTransaction, type WalletBalance, type WalletPayment } from './lib/stellar'
 
 type Notice = { kind: 'success' | 'error' | 'info'; text: string }
@@ -43,7 +43,7 @@ export default function App() {
         setNotice({ kind: 'error', text: 'Freighter was not detected. Install the Freighter browser extension and try again.' })
         return
       }
-      const result = await getAddress()
+      const result = await requestAccess()
       if (result.error || !result.address) throw new Error(result.error?.message ?? 'Wallet connection was not approved.')
       setAddress(result.address)
       setNotice({ kind: 'success', text: 'Wallet connected to Stellar Testnet.' })
