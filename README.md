@@ -30,7 +30,7 @@ npm run preview
 This app is configured for Stellar **Testnet only**. Horizon requests use `https://horizon-testnet.stellar.org`; transactions are built with the Testnet network passphrase and signed in Freighter. The app never asks for or stores secret keys. Never enter a secret key into this app.
 
 ## Deployment
-The Vite build output is `dist/`. A GitHub Actions workflow checks the TypeScript production build on pushes and pull requests to `main`. To publish on GitHub Pages, configure Pages to deploy the `dist` artifact with a Pages deployment workflow.
+The Vite build output is `dist/`. GitHub Actions builds the app and deploys it to GitHub Pages on every push to `main`. In the repository, open **Settings → Pages** and set **Build and deployment → Source** to **GitHub Actions**.
 
 ## Important
 This is a starter wallet interface, not an audited production wallet. Review every transaction carefully before signing.
