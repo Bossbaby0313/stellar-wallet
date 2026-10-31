@@ -5,7 +5,7 @@ export const HORIZON_URL = 'https://horizon-testnet.stellar.org'
 export const server = new Horizon.Server(HORIZON_URL)
 
 export type WalletBalance = { asset: string; amount: string; issuer?: string; limit?: string }
-export type WalletPayment = { id: string; type: string; amount: string; asset: string; created_at: string; from: string; to: string }
+export type WalletPayment = { id: string; type: string; amount: string; asset: string; created_at: string; from: string; to: string; direction: 'incoming' | 'outgoing' | 'other' }
 
 export async function loadBalances(publicKey: string): Promise<WalletBalance[]> {
   const account = await server.loadAccount(publicKey)
@@ -18,12 +18,20 @@ export async function loadBalances(publicKey: string): Promise<WalletBalance[]> 
 }
 
 export async function loadPayments(publicKey: string): Promise<WalletPayment[]> {
-  const page = await server.payments().forAccount(publicKey).order('desc').limit(8).call()
-  return page.records.map((record: any) => ({
-    id: record.id, type: record.type, amount: record.amount ?? '—',
-    asset: record.asset_type === 'native' ? 'XLM' : (record.asset_code ?? 'Asset'),
-    created_at: record.created_at, from: record.from ?? '', to: record.to ?? ''
-  }))
+  // Query account operations so both credits and debits are included.
+  const page = await server.operations().forAccount(publicKey).order('desc').limit(8).call()
+  return page.records.map((record: any) => {
+    const from = record.from ?? ''
+    const to = record.to ?? record.account ?? ''
+    const amount = record.amount ?? record.starting_balance ?? '—'
+    return {
+      id: String(record.id), type: record.type,
+      amount,
+      asset: record.asset_type === 'native' || record.type === 'create_account' ? 'XLM' : (record.asset_code ?? 'Asset'),
+      created_at: record.created_at, from, to,
+      direction: to === publicKey ? 'incoming' : from === publicKey ? 'outgoing' : 'other'
+    }
+  })
 }
 
 export async function buildPayment(publicKey: string, destination: string, amount: string) {
